@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>TruhFocuser</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      min-height: 200px;
+      padding: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      background: #12121f;
+      color: #e0e0e0;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .header h1 {
+      font-size: 22px;
+      color: #ff4444;
+      letter-spacing: 1px;
+    }
+    .header p {
+      font-size: 11px;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    /* ── Current site banner ── */
+    #current-site-box {
+      background: #1c1c30;
+      border: 1px solid #2a2a45;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+    #current-site-box .label {
+      color: #888;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    #current-hostname {
+      color: #ff9999;
+      font-weight: 700;
+    }
+    .btn-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-row button {
+      flex: 1;
+      padding: 6px 8px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .btn-row button:hover { opacity: 0.85; }
+    #btn-distract { background: #8b0000; color: #fff; }
+    #btn-work     { background: #004d00; color: #fff; }
+
+    /* ── Site list sections ── */
+    .section { margin-bottom: 16px; }
+
+    .section-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: #aaa;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-red   { background: #cc0000; }
+    .dot-green { background: #00aa00; }
+
+    .site-list {
+      background: #0e0e1e;
+      border: 1px solid #252540;
+      border-radius: 8px;
+      padding: 6px;
+      max-height: 110px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+
+    .site-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 6px;
+      border-radius: 5px;
+      font-size: 12px;
+      color: #ccc;
+    }
+    .site-item:hover { background: #1a1a30; }
+
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      padding: 0 2px;
+      transition: color 0.15s;
+    }
+    .remove-btn:hover { color: #ff4444; }
+
+    .empty-hint {
+      color: #444;
+      font-size: 11px;
+      text-align: center;
+      padding: 6px 0;
+    }
+
+    /* ── Add row ── */
+    .add-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 7px;
+    }
+
+    .add-row input {
+      flex: 1;
+      background: #0e0e1e;
+      border: 1px solid #2a2a45;
+      color: #eee;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      outline: none;
+    }
+    .add-row input:focus { border-color: #cc0000; }
+
+    .add-btn {
+      background: #cc0000;
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: background 0.15s;
+    }
+    .add-btn:hover { background: #aa0000; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      color: #444;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h3>the canadian made</h3>
+    <h1>TruhFocuser</h1>
+    <p>Don't slack off or else trump will come after you</p>
+  </div>
+
+  <div id="current-site-box">
+    <div class="label">Current site: <span id="current-hostname">—</span></div>
+    <div class="btn-row">
+      <button id="btn-distract">Mark Distracting</button>
+      <button id="btn-work">Mark as Work</button>
+    </div>
+  </div>
+
+  <!-- Distracting sites -->
+  <div class="section">
+    <div class="section-header">
+      <span class="dot dot-red"></span> Distracting Sites
+    </div>
+    <div class="site-list" id="distract-list">
+      <div class="empty-hint">Loading…</div>
+    </div>
+    <div class="add-row">
+      <input id="distract-input" type="text" placeholder="reddit.com"/>
+      <button class="add-btn" id="distract-add">Add</button>
+    </div>
+  </div>
+
+  <!-- Work sites -->
+  <div class="section">
+    <div class="section-header">
+      <span class="dot dot-green"></span> Work Sites
+    </div>
+    <div class="site-list" id="work-list">
+      <div class="empty-hint">Loading…</div>
+    </div>
+    <div class="add-row">
+      <input id="work-input" type="text" placeholder="github.com"/>
+      <button class="add-btn" id="work-add">Add</button>
+    </div>
+  </div>
+
+  <div class="footer">Changes apply instantly on next tab switch. <br> Made by Wentao & Kevin</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

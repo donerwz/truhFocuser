@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "TruhFocuser",
+  "version": "1.0",
+  "description": "A little orange demon that whips your screen if you aren't focused",
+  "permissions": ["tabs", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TruhFocuser  - A productivity tool with a twist"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
