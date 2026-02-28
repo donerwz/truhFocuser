@@ -38,6 +38,13 @@ function matchesSite(hostname, siteList) {
 }
 
 async function checkTab(tabId, url) {
+  // If extension is disabled, hide any overlay and bail
+  const enabledData = await chrome.storage.sync.get('enabled');
+  if (enabledData.enabled === false) {
+    try { await chrome.tabs.sendMessage(tabId, { type: 'HIDE_WHIP' }); } catch {}
+    return;
+  }
+
   // If the screen is fully locked, enforce it on every tab regardless of URL
   const lockData = await chrome.storage.session.get('focusWhipLocked');
   if (lockData.focusWhipLocked) {

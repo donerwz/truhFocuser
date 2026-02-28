@@ -94,3 +94,31 @@ document.getElementById('work-add').addEventListener('click', () =>
 document.getElementById('work-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') addSite('work-input', workSites, 'workSites', 'work-list');
 });
+
+// ── Enable / disable toggle ───────────────────────────────────────────────────
+
+const toggle      = document.getElementById('enabled-toggle');
+const toggleState = document.getElementById('toggle-state');
+
+function applyToggleUI(enabled) {
+  toggle.checked          = enabled;
+  toggleState.textContent = enabled ? 'ON' : 'OFF';
+  toggleState.style.color = enabled ? '#cc0000' : '#555';
+}
+
+chrome.storage.sync.get('enabled', (data) => {
+  applyToggleUI(data.enabled !== false); // default ON
+});
+
+toggle.addEventListener('change', () => {
+  const enabled = toggle.checked;
+  chrome.storage.sync.set({ enabled });
+  applyToggleUI(enabled);
+
+  if (!enabled) {
+    // Immediately hide overlay on the active tab
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) chrome.tabs.sendMessage(tabs[0].id, { type: 'HIDE_WHIP' }).catch(() => {});
+    });
+  }
+});
