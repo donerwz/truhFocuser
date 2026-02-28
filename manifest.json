@@ -15,9 +15,19 @@
       "css": ["content.css"]
     }
   ],
+  "icons": {
+    "16":  "assets/truh-icon.png",
+    "48":  "assets/truh-icon.png",
+    "128": "assets/truh-icon.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "TruhFocuser  - A productivity tool with a twist"
+    "default_title": "TruhFocuser - A productivity tool with a twist",
+    "default_icon": {
+      "16":  "assets/truh-icon.png",
+      "48":  "assets/truh-icon.png",
+      "128": "assets/truh-icon.png"
+    }
   },
   "web_accessible_resources": [
     {

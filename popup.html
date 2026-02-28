@@ -16,7 +16,7 @@
       color: #e0e0e0;
     }
 
-    /* ── Header ── */
+    /* Header */
     .header {
       text-align: center;
       margin-bottom: 18px;
@@ -31,8 +31,17 @@
       color: #666;
       margin-top: 3px;
     }
+    /* Title Row */
+    .title{
+      display:flex;
+      flex-direction: row;
+      margin: auto;
+    }
+    .title img{
+      height: 50px;
+    }
 
-    /* ── Current site banner ── */
+    /* Current site banner */
     #current-site-box {
       background: #1c1c30;
       border: 1px solid #2a2a45;
@@ -68,7 +77,7 @@
     #btn-distract { background: #8b0000; color: #fff; }
     #btn-work     { background: #004d00; color: #fff; }
 
-    /* ── Site list sections ── */
+    /* Site list sections */
     .section { margin-bottom: 16px; }
 
     .section-header {
@@ -164,7 +173,7 @@
     }
     .add-btn:hover { background: #aa0000; }
 
-    /* ── Footer ── */
+    /* Footer */
     .footer {
       text-align: center;
       color: #444;
@@ -176,8 +185,10 @@
 <body>
 
   <div class="header">
-    <h3>the canadian made</h3>
-    <h1>TruhFocuser</h1>
+    <div class="title">
+      <img src="assets/truh-icon.jpeg">
+      <h1>TruhFocuser</h1>
+    </div>
     <p>Don't slack off or else trump will come after you</p>
   </div>
 
