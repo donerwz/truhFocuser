@@ -22,7 +22,6 @@
 #fw-vignette {
   position: absolute;
   inset: 0;
-  /* Start transparent — JS drives every update so no CSS transition needed */
   background: transparent;
   pointer-events: none;
 }
@@ -62,7 +61,7 @@
   transition: transform 0.4s ease-in;
 }
 
-/* ── Character (SVG or video) ─────────────────────────────────────────────── */
+/* ── Character ────────────────────────────────────────────────────────────── */
 
 #fw-char {
   width: 220px;
@@ -71,34 +70,11 @@
   filter: drop-shadow(0 8px 18px rgba(0,0,0,0.55));
 }
 
-#fw-svg {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-/* ── Video mode ───────────────────────────────────────────────────────────── */
-/* Drop assets/whipping.mp4 and assets/locked.mp4 into the extension folder  */
-
-#fw-video {
-  display: none;
+#fw-frame {
   width: 220px;
   height: auto;
-  object-fit: contain;
-}
-
-/* When a video file loads successfully, show it and hide the SVG */
-#fw-overlay.fw-video-mode #fw-video {
   display: block;
-}
-
-#fw-overlay.fw-video-mode #fw-svg-fallback {
-  display: none;
-}
-
-/* Video plays its own animation — disable the CSS bob on the wrapper */
-#fw-overlay.fw-video-mode #fw-char {
-  animation: none;
+  image-rendering: pixelated;
 }
 
 @keyframes fw-bob {
@@ -107,52 +83,14 @@
   75%       { transform: translateY(-3px)  rotate(0.6deg); }
 }
 
-/* ── Whip arm animation ───────────────────────────────────────────────────── */
-/* transform-origin must match the shoulder coordinates in viewBox space.
-   CSS transform-origin on SVG <g> uses the element's local coordinate system. */
-
-#fw-arm {
-  transform-origin: 63px 155px;
-  transition: transform 0.15s ease-out;
-}
-
-/* Phase 1 — raise the arm */
-#fw-arm.fw-arm-raise {
-  transform: rotate(-48deg);
-  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
-/* Phase 2 — crack (fast snap downward) */
-#fw-arm.fw-arm-crack {
-  transform: rotate(28deg);
-  transition: transform 0.18s cubic-bezier(0.55, 0, 1, 0.45);
-}
-
-/* Whip rope path — instant update (no CSS transition; JS sets attribute directly) */
-#fw-whip-rope {
-  transition: none;
-}
-
 /* ── Locked state — permanent, survives all tab switches ─────────────────── */
 
-/* Force the overlay to stay fully opaque — nothing can hide it */
 #fw-overlay.fw-locked {
   opacity: 1 !important;
   transition: none !important;
 }
 
-/* Character stays on screen and switches to a victory bounce */
 #fw-overlay.fw-locked #fw-char-wrap {
   transform: translateY(0) !important;
   transition: none !important;
 }
-
-#fw-overlay.fw-locked #fw-char {
-  animation: fw-victory 0.5s ease-in-out infinite;
-}
-
-@keyframes fw-victory {
-  0%, 100% { transform: translateY(-7px) rotate(-5deg) scale(1.03); }
-  50%       { transform: translateY(5px)  rotate(5deg)  scale(0.97); }
-}
-
