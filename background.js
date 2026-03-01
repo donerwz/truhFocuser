@@ -11,6 +11,11 @@ const DEFAULT_WORK = [
   'anthropic.com', 'openai.com', 'cursor.sh', 'vscode.dev'
 ];
 
+// Clear the lock whenever Chrome fully restarts
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.remove('focusWhipLocked');
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.sync.get(['distractingSites', 'workSites'], (data) => {
     if (!data.distractingSites) {
@@ -46,7 +51,7 @@ async function checkTab(tabId, url) {
   }
 
   // If the screen is fully locked, enforce it on every tab regardless of URL
-  const lockData = await chrome.storage.session.get('focusWhipLocked');
+  const lockData = await chrome.storage.local.get('focusWhipLocked');
   if (lockData.focusWhipLocked) {
     try { await chrome.tabs.sendMessage(tabId, { type: 'SHOW_LOCKED' }); } catch {}
     return;
@@ -94,7 +99,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.active) {
+  if (changeInfo.status === 'complete') {
     checkTab(tabId, tab.url);
   }
 });

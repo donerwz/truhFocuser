@@ -12,9 +12,17 @@
   let redLevel = 0; // 0.0 – 1.0; when it hits 1.0 the screen locks
 
   // ── Check for existing lock on page load ─────────────────────────────────────
-  chrome.storage.session.get('focusWhipLocked', (data) => {
+  chrome.storage.local.get('focusWhipLocked', (data) => {
     if (data.focusWhipLocked) applyLockedScreen();
   });
+
+  // ── Poll every second — catches any broadcasts that were missed ───────────────
+  setInterval(() => {
+    if (locked) return;
+    chrome.storage.local.get('focusWhipLocked', (data) => {
+      if (data.focusWhipLocked) applyLockedScreen();
+    });
+  }, 1000);
 
   // ── Frame animation ───────────────────────────────────────────────────────────
   const FRAMES_WHIP = [
@@ -138,7 +146,7 @@
     clearInterval(redTimer);
 
     // Persist to session storage and broadcast to all open tabs via background
-    chrome.storage.session.set({ focusWhipLocked: true });
+    chrome.storage.local.set({ focusWhipLocked: true });
     chrome.runtime.sendMessage({ type: 'LOCKED' });
 
     if (!overlay) overlay = buildOverlay();
