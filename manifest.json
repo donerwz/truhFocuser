@@ -3,7 +3,7 @@
   "name": "TruhFocuser",
   "version": "1.0",
   "description": "A little orange demon that whips your screen if you aren't focused",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "offscreen"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
