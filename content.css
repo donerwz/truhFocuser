@@ -1,4 +1,4 @@
-/* ── FocusWhip overlay ─────────────────────────────────────────────────────── */
+/* FocusWhip overlay */
 
 #fw-overlay {
   position: fixed;
@@ -17,7 +17,7 @@
   opacity: 0;
 }
 
-/* ── Red vignette ─────────────────────────────────────────────────────────── */
+/* Red vignette */
 
 #fw-vignette {
   position: absolute;
@@ -26,7 +26,7 @@
   pointer-events: none;
 }
 
-/* ── Screen flash on whip crack ───────────────────────────────────────────── */
+/* Screen flash on whip crack */
 
 #fw-flash {
   position: absolute;
@@ -37,7 +37,7 @@
   pointer-events: none;
 }
 
-/* ── Whip scratch lines ───────────────────────────────────────────────────── */
+/* Whip scratch lines */
 
 #fw-scratches {
   position: absolute;
@@ -56,7 +56,7 @@
   border-radius: 1px;
 }
 
-/* ── Character wrapper ────────────────────────────────────────────────────── */
+/* Character wrapper */
 
 #fw-char-wrap {
   position: absolute;
@@ -80,7 +80,7 @@
   transition: transform 0.4s ease-in;
 }
 
-/* ── Character ────────────────────────────────────────────────────────────── */
+/* Character */
 
 #fw-char {
   width: 220px;
@@ -102,7 +102,7 @@
   75%       { transform: translateY(-3px)  rotate(0.6deg); }
 }
 
-/* ── Speech bubble (locked state only) ───────────────────────────────────── */
+/* Speech bubble (locked state only) */
 
 #fw-bubble {
   display: none;
@@ -136,7 +136,7 @@
   display: block;
 }
 
-/* ── Locked state — permanent, survives all tab switches ─────────────────── */
+/* Locked state - permanent, survives all tab switches */
 
 #fw-overlay.fw-locked {
   opacity: 1 !important;

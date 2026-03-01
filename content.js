@@ -12,12 +12,12 @@
   let redTimer = null;
   let redLevel = 0; // 0.0 – 1.0; when it hits 1.0 the screen locks
 
-  // ── Check for existing lock on page load ─────────────────────────────────────
+  // Check for existing lock on page load
   chrome.storage.local.get('focusWhipLocked', (data) => {
     if (data.focusWhipLocked) applyLockedScreen();
   });
 
-  // ── Frame animation ───────────────────────────────────────────────────────────
+  // Frame animation
   const FRAMES_WHIP = [
     chrome.runtime.getURL('assets/whipfr1.png'),
     chrome.runtime.getURL('assets/whipfr2.png'),
@@ -48,7 +48,7 @@
     frameTimer = null;
   }
 
-  // ── SFX ───────────────────────────────────────────────────────────────────────
+  // SFX
   const WHIP_SFX = [
     chrome.runtime.getURL('assets/sfx/whip1.mp3'),
     chrome.runtime.getURL('assets/sfx/whip2.mp3'),
@@ -117,7 +117,7 @@
     audio.play().catch(() => { sfxPlaying = false; });
   }
 
-  // ── DOM construction ──────────────────────────────────────────────────────────
+  // DOM construction
   function buildOverlay() {
     const el = document.createElement('div');
     el.id = 'fw-overlay';
@@ -136,7 +136,7 @@
     return el;
   }
 
-  // ── Scratch lines — dark red slashes that flash on whipfr2 ──────────────────
+  // Scratch lines — dark red slashes that flash on whipfr2
   function flashScratches() {
     if (!overlay) return;
     const container = overlay.querySelector('#fw-scratches');
@@ -162,7 +162,7 @@
     }
   }
 
-  // ── Whip cycle — flash on each crack ─────────────────────────────────────────
+  // Whip cycle - flash on each crack
   function doWhipCycle() {
     if (!overlay || !isDistracted || locked) return;
     const flash = overlay.querySelector('#fw-flash');
@@ -170,7 +170,7 @@
     setTimeout(() => { if (flash) flash.style.opacity = '0'; }, 80);
   }
 
-  // ── Red vignette ──────────────────────────────────────────────────────────────
+  // Red vignette 
   function updateVignette() {
     if (!overlay) return;
     const v = overlay.querySelector('#fw-vignette');
@@ -197,7 +197,7 @@
     if (redLevel >= 1.0) lockScreen();
   }
 
-  // ── Lock — permanent full-screen red, survives tab switches ──────────────────
+  // Lock - permanent full-screen red, survives tab switches
   function lockScreen() {
     locked = true;
     clearTimeout(whipTimerDelay);
@@ -231,7 +231,7 @@
     startFrames(FRAMES_VIC);
   }
 
-  // ── Apply locked state on page load (already locked from a previous tab) ─────
+  // Apply locked state on page load (already locked from a previous tab)
   function applyLockedScreen() {
     locked = true;
     isDistracted = true;
@@ -248,7 +248,7 @@
     });
   }
 
-  // ── Show / hide ───────────────────────────────────────────────────────────────
+  // Show / hide
   function showWhip() {
     if (locked || isDistracted) return;
     isDistracted = true;
@@ -290,7 +290,7 @@
     redLevel = 0;
   }
 
-  // ── Message listener ──────────────────────────────────────────────────────────
+  // Message listener
   chrome.runtime.onMessage.addListener((msg) => {
     if      (msg.type === 'SHOW_LOCKED') applyLockedScreen();
     else if (msg.type === 'SHOW_WHIP')   showWhip();
