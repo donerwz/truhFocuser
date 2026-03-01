@@ -8,6 +8,7 @@
   let isDistracted = false;
   let locked = false;
   let whipTimer = null;
+  let whipTimerDelay = null;
   let redTimer = null;
   let redLevel = 0; // 0.0 – 1.0; when it hits 1.0 the screen locks
 
@@ -29,7 +30,7 @@
   let frameTimer = null;
   let frameIdx   = 0;
 
-  function startFrames(frames) {
+  function startFrames(frames, onFrame2) {
     clearInterval(frameTimer);
     frameIdx = 0;
     const img = overlay && overlay.querySelector('#fw-frame');
@@ -38,7 +39,8 @@
     frameTimer = setInterval(() => {
       frameIdx = 1 - frameIdx;
       img.src = frames[frameIdx];
-    }, 500);
+      if (frameIdx === 1 && onFrame2) onFrame2();
+    }, 1000);
   }
 
   function stopFrames() {
@@ -47,7 +49,40 @@
   }
 
   // ── SFX ───────────────────────────────────────────────────────────────────────
-  const SFX_URL = chrome.runtime.getURL('assets/sfx/off1.mp3');
+  const WHIP_SFX = [
+    chrome.runtime.getURL('assets/sfx/whip1.mp3'),
+    chrome.runtime.getURL('assets/sfx/whip2.mp3'),
+    chrome.runtime.getURL('assets/sfx/whip3.mp3'),
+  ];
+
+  // Background track — loops continuously while whipping
+  const bgAudio = new Audio(chrome.runtime.getURL('assets/sfx/off1.mp3'));
+  bgAudio.loop   = true;
+  bgAudio.volume = 0.5;
+  let bgAudioPending = false;
+
+  function startBgAudio() {
+    bgAudio.play().catch(() => {
+      bgAudioPending = true; // blocked by autoplay policy — retry on first gesture
+    });
+  }
+  function stopBgAudio() {
+    bgAudioPending = false;
+    bgAudio.pause();
+    bgAudio.currentTime = 0;
+  }
+  let whipSfxQueue = [];
+  function getNextWhipSfx() {
+    if (!whipSfxQueue.length) {
+      whipSfxQueue = [...WHIP_SFX];
+      for (let i = whipSfxQueue.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [whipSfxQueue[i], whipSfxQueue[j]] = [whipSfxQueue[j], whipSfxQueue[i]];
+      }
+    }
+    return whipSfxQueue.pop();
+  }
+
   let sfxPlaying = false;
 
   // Preload the lock sound so it's ready to play instantly
@@ -59,6 +94,10 @@
   let sfxReady = false;
   function _unlockSfx() {
     sfxReady = true;
+    if (bgAudioPending) {
+      bgAudioPending = false;
+      bgAudio.play().catch(() => {});
+    }
     if (pendingLockSound) {
       pendingLockSound = false;
       lockAudio.play().catch(() => {});
@@ -72,7 +111,7 @@
   function playSfx() {
     if (!sfxReady || sfxPlaying) return;
     sfxPlaying = true;
-    const audio = new Audio(SFX_URL);
+    const audio = new Audio(getNextWhipSfx());
     audio.volume = 0.7;
     audio.addEventListener('ended', () => { sfxPlaying = false; }, { once: true });
     audio.play().catch(() => { sfxPlaying = false; });
@@ -85,6 +124,7 @@
     el.innerHTML = `
       <div id="fw-vignette"></div>
       <div id="fw-flash"></div>
+      <div id="fw-scratches"></div>
       <div id="fw-char-wrap">
         <div id="fw-bubble">haha now you have to restart your browser</div>
         <div id="fw-char">
@@ -96,13 +136,38 @@
     return el;
   }
 
-  // ── Whip cycle — flash + SFX on each crack ────────────────────────────────────
+  // ── Scratch lines — dark red slashes that flash on whipfr2 ──────────────────
+  function flashScratches() {
+    if (!overlay) return;
+    const container = overlay.querySelector('#fw-scratches');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const count = 2 + Math.floor(Math.random() * 2); // 2–3 lines
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('div');
+      el.className = 'fw-scratch';
+      el.style.top       = (10 + Math.random() * 70) + '%';
+      el.style.left      = (-5 + Math.random() * 15) + '%';
+      el.style.width     = (60 + Math.random() * 35) + '%';
+      el.style.height    = '50px';
+      el.style.transform = `rotate(${-18 + Math.random() * 12}deg)`;
+      el.style.opacity   = '1';
+      container.appendChild(el);
+      // Fade out after one frame so the browser paints at full opacity first
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity 0.45s ease-out';
+        requestAnimationFrame(() => { el.style.opacity = '0'; });
+      });
+    }
+  }
+
+  // ── Whip cycle — flash on each crack ─────────────────────────────────────────
   function doWhipCycle() {
     if (!overlay || !isDistracted || locked) return;
     const flash = overlay.querySelector('#fw-flash');
     flash.style.opacity = '0.35';
     setTimeout(() => { if (flash) flash.style.opacity = '0'; }, 80);
-    playSfx();
   }
 
   // ── Red vignette ──────────────────────────────────────────────────────────────
@@ -135,8 +200,10 @@
   // ── Lock — permanent full-screen red, survives tab switches ──────────────────
   function lockScreen() {
     locked = true;
+    clearTimeout(whipTimerDelay);
     clearInterval(whipTimer);
     clearInterval(redTimer);
+    stopBgAudio();
 
     // Persist to session storage and broadcast to all open tabs via background
     chrome.storage.local.set({ focusWhipLocked: true });
@@ -190,11 +257,14 @@
 
     requestAnimationFrame(() => {
       overlay.classList.add('fw-visible');
-      startFrames(FRAMES_WHIP);
+      startFrames(FRAMES_WHIP, () => { playSfx(); flashScratches(); });
+      startBgAudio();
       setTimeout(doWhipCycle, 600);
     });
 
-    whipTimer = setInterval(doWhipCycle, 2800);
+    whipTimerDelay = setTimeout(() => {
+      whipTimer = setInterval(doWhipCycle, 2000);
+    }, 1000);
     redTimer  = setInterval(tickRed, 500);
   }
 
@@ -203,9 +273,11 @@
     if (!isDistracted) return;
     isDistracted = false;
 
+    clearTimeout(whipTimerDelay);
     clearInterval(whipTimer);
     clearInterval(redTimer);
     stopFrames();
+    stopBgAudio();
 
     if (overlay) {
       overlay.classList.remove('fw-visible');
