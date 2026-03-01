@@ -72,6 +72,18 @@ async function checkTab(tabId, url) {
   }
 }
 
+// When any tab locks, immediately push SHOW_LOCKED to every open tab
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'LOCKED') {
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://') || tab.url.startsWith('about:')) return;
+        chrome.tabs.sendMessage(tab.id, { type: 'SHOW_LOCKED' }).catch(() => {});
+      });
+    });
+  }
+});
+
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   try {
     const tab = await chrome.tabs.get(tabId);

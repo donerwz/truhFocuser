@@ -11,20 +11,6 @@
   let redTimer = null;
   let redLevel = 0; // 0.0 – 1.0; when it hits 1.0 the screen locks
 
-  const TAUNTS = [
-    'GET BACK TO WORK!',
-    'No slacking, human!',
-    'I see you...',
-    'Focus. NOW.',
-    "*CRACK*",
-    'Productivity or PAIN.',
-    'Stop wasting time!',
-    'Back to work!',
-    'You disappoint me.',
-    '..really?',
-  ];
-  let tauntIdx = 0;
-
   // ── Check for existing lock on page load ─────────────────────────────────────
   chrome.storage.session.get('focusWhipLocked', (data) => {
     if (data.focusWhipLocked) applyLockedScreen();
@@ -80,6 +66,38 @@
   const VIDEO_WHIP   = chrome.runtime.getURL('assets/whipping.mp4');
   const VIDEO_LOCKED = chrome.runtime.getURL('assets/locked.mp4');
 
+  // ── SFX ───────────────────────────────────────────────────────────────────────
+  const SFX_URL    = chrome.runtime.getURL('assets/sfx/off1.mp3');
+  let sfxPlaying = false;
+
+  // Preload the lock sound so it's ready to play instantly
+  const lockAudio = new Audio(chrome.runtime.getURL('assets/sfx/truhm.wav'));
+  lockAudio.preload = 'auto';
+  lockAudio.volume  = 1.0;
+  let pendingLockSound = false;
+
+  let sfxReady = false;
+  function _unlockSfx() {
+    sfxReady = true;
+    if (pendingLockSound) {
+      pendingLockSound = false;
+      lockAudio.play().catch(() => {});
+    }
+    ['click', 'keydown', 'scroll'].forEach(e =>
+      document.removeEventListener(e, _unlockSfx, { capture: true }));
+  }
+  ['click', 'keydown', 'scroll'].forEach(e =>
+    document.addEventListener(e, _unlockSfx, { capture: true }));
+
+  function playSfx() {
+    if (!sfxReady || sfxPlaying) return;
+    sfxPlaying = true;
+    const audio = new Audio(SFX_URL);
+    audio.volume = 0.7;
+    audio.addEventListener('ended', () => { sfxPlaying = false; }, { once: true });
+    audio.play().catch(() => { sfxPlaying = false; });
+  }
+
   function initVideo(el) {
     const video = el.querySelector('#fw-video');
 
@@ -118,7 +136,6 @@
       <div id="fw-vignette"></div>
       <div id="fw-flash"></div>
       <div id="fw-char-wrap">
-        <div id="fw-bubble"></div>
         <div id="fw-char">
           <video id="fw-video" autoplay loop muted playsinline></video>
           <div id="fw-svg-fallback">${CHARACTER_SVG}</div>
@@ -142,7 +159,6 @@
     const rope   = overlay.querySelector('#fw-whip-rope');
     const tip    = overlay.querySelector('#fw-whip-tip');
     const flash  = overlay.querySelector('#fw-flash');
-    const bubble = overlay.querySelector('#fw-bubble');
 
     arm.classList.remove('fw-arm-crack');
     arm.classList.add('fw-arm-raise');
@@ -161,14 +177,7 @@
 
       flash.style.opacity = '0.35';
       setTimeout(() => { if (flash) flash.style.opacity = '0'; }, 80);
-
-      if (tauntIdx % 2 === 0) {
-        const text = TAUNTS[Math.floor(Math.random() * TAUNTS.length)];
-        bubble.textContent = text;
-        bubble.classList.add('fw-show');
-        setTimeout(() => bubble.classList.remove('fw-show'), 2200);
-      }
-      tauntIdx++;
+      playSfx();
 
       setTimeout(() => {
         if (!overlay || !isDistracted || locked) return;
@@ -219,8 +228,9 @@
     clearInterval(whipTimer);
     clearInterval(redTimer);
 
-    // Persist to local storage — background script reads this on every tab change
+    // Persist to session storage and broadcast to all open tabs via background
     chrome.storage.session.set({ focusWhipLocked: true });
+    chrome.runtime.sendMessage({ type: 'LOCKED' });
 
     if (!overlay) overlay = buildOverlay();
     overlay.classList.add('fw-visible', 'fw-locked');
@@ -232,15 +242,16 @@
       v.style.background = 'rgba(140, 0, 0, 0.96)';
     }
 
+    // Play locked SFX (if autoplay is still blocked, queue it for next gesture)
+    lockAudio.currentTime = 0;
+    if (sfxReady) {
+      lockAudio.play().catch(() => {});
+    } else {
+      pendingLockSound = true;
+    }
+
     // Switch to locked video (falls back to whipping video if not provided)
     switchVideo(VIDEO_LOCKED);
-
-    // Permanent taunting bubble
-    const bubble = overlay.querySelector('#fw-bubble');
-    if (bubble) {
-      bubble.textContent = 'HAHAHA! Restart Chrome to escape. \uD83D\uDE08';
-      bubble.classList.add('fw-show', 'fw-bubble-permanent');
-    }
   }
 
   // ── Apply locked state on page load (already locked from a previous tab) ─────
@@ -258,12 +269,6 @@
 
       // Switch to locked video (falls back to whipping video if not provided)
       switchVideo(VIDEO_LOCKED);
-
-      const bubble = overlay.querySelector('#fw-bubble');
-      if (bubble) {
-        bubble.textContent = 'HAHAHA! Restart Chrome to escape. \uD83D\uDE08';
-        bubble.classList.add('fw-show', 'fw-bubble-permanent');
-      }
     });
   }
 
@@ -301,7 +306,6 @@
 
     // Reset red level — user escaped in time
     redLevel = 0;
-    tauntIdx = 0;
   }
 
   // ── Message listener ──────────────────────────────────────────────────────────

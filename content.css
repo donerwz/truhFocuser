@@ -133,32 +133,6 @@
   transition: none;
 }
 
-/* ── Speech bubble ────────────────────────────────────────────────────────── */
-
-#fw-bubble {
-  background: #fff;
-  border: 3px solid #333;
-  border-radius: 14px;
-  padding: 7px 14px;
-  font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: #cc0000;
-  white-space: nowrap;
-  margin-bottom: 10px;
-  margin-right: 28px;
-  opacity: 0;
-  transform: scale(0.7) translateY(6px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.3);
-  position: relative;
-}
-
-#fw-bubble.fw-show {
-  opacity: 1;
-  transform: scale(1) translateY(0);
-}
-
 /* ── Locked state — permanent, survives all tab switches ─────────────────── */
 
 /* Force the overlay to stay fully opaque — nothing can hide it */
@@ -182,38 +156,3 @@
   50%       { transform: translateY(5px)  rotate(5deg)  scale(0.97); }
 }
 
-/* Permanent bubble shown when locked */
-#fw-bubble.fw-bubble-permanent {
-  opacity: 1 !important;
-  transform: scale(1) translateY(0) !important;
-  background: #7a0000 !important;
-  color: #fff !important;
-  border-color: #ff5555 !important;
-  white-space: normal !important;
-  max-width: 180px;
-  text-align: center;
-  line-height: 1.4;
-}
-
-/* Tail pointing down-right toward character */
-#fw-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -13px;
-  right: 22px;
-  width: 0; height: 0;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 13px solid #fff;
-}
-
-#fw-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: -17px;
-  right: 20px;
-  width: 0; height: 0;
-  border-left: 11px solid transparent;
-  border-right: 11px solid transparent;
-  border-top: 15px solid #333;
-}
