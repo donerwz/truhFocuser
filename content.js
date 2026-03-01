@@ -16,14 +16,6 @@
     if (data.focusWhipLocked) applyLockedScreen();
   });
 
-  // ── Poll every second — catches any broadcasts that were missed ───────────────
-  setInterval(() => {
-    if (locked) return;
-    chrome.storage.local.get('focusWhipLocked', (data) => {
-      if (data.focusWhipLocked) applyLockedScreen();
-    });
-  }, 1000);
-
   // ── Frame animation ───────────────────────────────────────────────────────────
   const FRAMES_WHIP = [
     chrome.runtime.getURL('assets/whipfr1.png'),
