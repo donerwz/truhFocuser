@@ -86,6 +86,7 @@
       <div id="fw-vignette"></div>
       <div id="fw-flash"></div>
       <div id="fw-char-wrap">
+        <div id="fw-bubble">haha now you have to restart your browser</div>
         <div id="fw-char">
           <img id="fw-frame" src="" alt=""/>
         </div>
